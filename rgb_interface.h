@@ -3,6 +3,12 @@
 
 typedef unsigned char uchar;
 
+typedef struct Colours {
+    uchar red;
+    uchar green;
+    uchar blue;
+} colour;
+
 int enable_advanced_mode();
 int disable_advanced_mode();
 void write_byte(uchar cell, uchar byte);

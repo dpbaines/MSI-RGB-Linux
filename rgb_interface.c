@@ -47,8 +47,11 @@ void set_state(int time_interval, uchar invert_clrs, uchar fade, uchar d) {
 }
 
 void set_solid_color(uchar r, uchar g, uchar b) {
+    r = r | r << 4;
     r = ~r;
+    g = g | g << 4;
     g = ~g;
+    b = b | b << 4;
     b = ~b;
     
     write_byte(red, r);

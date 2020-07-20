@@ -23,6 +23,21 @@ void loop_screen_check() {
     }
 }
 
+colour linear_colour_scale(colour start, colour finish, float percent) {
+    // Use linear interpolation because I can't find an easier algorithm
+
+    float r_m = finish.red - start.red;
+    float g_m = finish.green - start.green;
+    float b_m = finish.blue - start.blue;
+
+    colour new_col;
+    new_col.red = percent * r_m + start.red;
+    new_col.green = percent * g_m + start.green;
+    new_col.blue = percent * b_m + start.blue;
+
+    return new_col;
+}
+
 int get_cpu_load_percent() {
     FILE *f;
     f = fopen("/proc/loadavg", "r");
@@ -35,9 +50,36 @@ int get_cpu_load_percent() {
 }
 
 int poll_cpu_time() {
+
+    colour start_colour;
+    colour finish_colour;
+
+    start_colour.red = 0;
+    start_colour.green = 15;
+    start_colour.blue = 0;
+
+    finish_colour.red = 15;
+    finish_colour.green = 0;
+    finish_colour.blue = 0;
+
     while (1) {
-        printf("CPU Percentage = %d\n", get_cpu_load_percent());
-        sleep(1);
+        int cpu_load_percentage = get_cpu_load_percent();
+        printf("CPU Percentage = %d\n", cpu_load_percentage);
+        
+        colour current_load;
+
+        if (cpu_load_percentage < 300) {
+            current_load = linear_colour_scale(start_colour, finish_colour, ((float) cpu_load_percentage / 300.0));
+        } else {
+            current_load.blue = 15;
+            current_load.red = 0;
+            current_load.green = 0;
+        }
+
+        printf("Setting colour to %d %d %d\n", current_load.red, current_load.green, current_load.blue);
+
+        set_solid_color(current_load.red, current_load.green, current_load.blue);
+        sleep(5);
     }
 }
 
@@ -54,7 +96,7 @@ int main(int argc, char** argv) {
         if(check_rgb() == 0) {
             printf("RGB detected\n");
 
-            set_state(0x0F, 0, 7, 1);
+            set_state(0xFF, 0, 0, 1);
 
             // uchar reddd[4] = {0xFF, 0xFF, 0x00, 0x00};
             // uchar greennn[4] = {0x00, 0xFF, 0xFF, 0x00};
