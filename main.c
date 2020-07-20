@@ -54,6 +54,9 @@ int poll_cpu_time() {
     colour start_colour;
     colour finish_colour;
 
+    colour start_colour_high;
+    colour finish_colour_high;
+
     start_colour.red = 0;
     start_colour.green = 15;
     start_colour.blue = 0;
@@ -61,6 +64,14 @@ int poll_cpu_time() {
     finish_colour.red = 15;
     finish_colour.green = 0;
     finish_colour.blue = 0;
+
+    start_colour_high.red = 15;
+    start_colour_high.green = 0;
+    start_colour_high.blue = 0;
+
+    finish_colour_high.red = 0;
+    finish_colour_high.green = 0;
+    finish_colour_high.blue = 15;
 
     while (1) {
         int cpu_load_percentage = get_cpu_load_percent();
@@ -71,9 +82,7 @@ int poll_cpu_time() {
         if (cpu_load_percentage < 300) {
             current_load = linear_colour_scale(start_colour, finish_colour, ((float) cpu_load_percentage / 300.0));
         } else {
-            current_load.blue = 15;
-            current_load.red = 0;
-            current_load.green = 0;
+            current_load = linear_colour_scale(start_colour_high, finish_colour_high, ((float) (cpu_load_percentage - 300) / 900.0));
         }
 
         printf("Setting colour to %d %d %d\n", current_load.red, current_load.green, current_load.blue);
