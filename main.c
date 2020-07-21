@@ -3,6 +3,7 @@
 #include <X11/Xutil.h>
 #include <unistd.h>
 #include <time.h>
+#include <math.h>
 
 void get_pixel_color (Display *d, int x, int y, XColor *color) {
     XImage *image;
@@ -47,6 +48,20 @@ colour linear_colour_scale(colour start, colour finish, float percent) {
     new_col.red = percent * r_m + start.red;
     new_col.green = percent * g_m + start.green;
     new_col.blue = percent * b_m + start.blue;
+
+    return new_col;
+}
+
+colour exponential_colour_scale(colour start, colour finish, float percent, float exponent) {
+
+    float r_m = (finish.red - start.red);
+    float g_m = (finish.green - start.green);
+    float b_m = (finish.blue - start.blue);
+
+    colour new_col;
+    new_col.red = powf(percent, exponent) * r_m + (finish.red - r_m);
+    new_col.green = powf(percent, exponent) * g_m + (finish.green - g_m);
+    new_col.blue = powf(percent, exponent) * b_m + (finish.blue - b_m);
 
     return new_col;
 }
@@ -103,7 +118,7 @@ int poll_cpu_time() {
             set_solid_color(15, 0, 0);
         } else {
             if (cpu_load_percentage < 300) {
-                current_load = linear_colour_scale(start_colour, finish_colour, ((float) cpu_load_percentage / 300.0));
+                current_load = exponential_colour_scale(start_colour, finish_colour, ((float) cpu_load_percentage / 300.0), 0.8);
             } else {
                 current_load = linear_colour_scale(start_colour_high, finish_colour_high, ((float) (cpu_load_percentage - 300) / 900.0));
             }
