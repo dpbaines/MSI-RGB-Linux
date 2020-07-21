@@ -86,3 +86,7 @@ void set_color_rotation(uchar* r, uchar* g, uchar* b) {
     write_byte(blue + 2, ~b[2]);
     write_byte(blue + 3, ~b[3]);
 }
+
+void set_blinking(int on) {
+    write_byte(0xE4, on == 1 ? 0x8 : 0x0);
+}

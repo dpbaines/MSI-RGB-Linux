@@ -2,6 +2,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <unistd.h>
+#include <time.h>
 
 void get_pixel_color (Display *d, int x, int y, XColor *color) {
     XImage *image;
@@ -9,6 +10,18 @@ void get_pixel_color (Display *d, int x, int y, XColor *color) {
     color->pixel = XGetPixel (image, 0, 0);
     XFree (image);
     XQueryColor (d, DefaultColormap(d, DefaultScreen (d)), color);
+}
+
+int is_night() {
+    time_t seconds;
+    struct tm* local;
+    seconds = time(NULL);
+    local = localtime(&seconds);
+
+    if (local->tm_hour < 7)
+        return 1;
+    
+    return 0;
 }
 
 void loop_screen_check() {
@@ -79,15 +92,27 @@ int poll_cpu_time() {
         
         colour current_load;
 
-        if (cpu_load_percentage < 300) {
-            current_load = linear_colour_scale(start_colour, finish_colour, ((float) cpu_load_percentage / 300.0));
+        if (is_night() == 1) {
+            printf("Is night time\n");
+            if (cpu_load_percentage > 300) {
+                set_blinking(1);
+            } else {
+                set_blinking(0);
+            }
+
+            set_solid_color(15, 0, 0);
         } else {
-            current_load = linear_colour_scale(start_colour_high, finish_colour_high, ((float) (cpu_load_percentage - 300) / 900.0));
+            if (cpu_load_percentage < 300) {
+                current_load = linear_colour_scale(start_colour, finish_colour, ((float) cpu_load_percentage / 300.0));
+            } else {
+                current_load = linear_colour_scale(start_colour_high, finish_colour_high, ((float) (cpu_load_percentage - 300) / 900.0));
+            }
+
+            printf("Setting colour to %d %d %d\n", current_load.red, current_load.green, current_load.blue);
+
+            set_solid_color(current_load.red, current_load.green, current_load.blue);
         }
 
-        printf("Setting colour to %d %d %d\n", current_load.red, current_load.green, current_load.blue);
-
-        set_solid_color(current_load.red, current_load.green, current_load.blue);
         sleep(5);
     }
 }

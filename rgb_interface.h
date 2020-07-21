@@ -16,3 +16,4 @@ int check_rgb();
 void set_state(int time_interval, uchar invert_clrs, uchar fade, uchar d);
 void set_solid_color(uchar r, uchar g, uchar b);
 void set_color_rotation(uchar* r, uchar* g, uchar* b);
+void set_blinking(int on);
