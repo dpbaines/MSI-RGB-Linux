@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <math.h>
+#include <string.h>
 
 void get_pixel_color (Display *d, int x, int y, XColor *color) {
     XImage *image;
@@ -37,6 +38,7 @@ void loop_screen_check() {
     }
 }
 
+// Use linear interpolation to create smooth gradient of colours
 colour linear_colour_scale(colour start, colour finish, float percent) {
     // Use linear interpolation because I can't find an easier algorithm
 
@@ -52,8 +54,8 @@ colour linear_colour_scale(colour start, colour finish, float percent) {
     return new_col;
 }
 
+// Use exponential interpolation to create a smooth gradient of colours
 colour exponential_colour_scale(colour start, colour finish, float percent, float exponent) {
-
     float r_m = (finish.red - start.red);
     float g_m = (finish.green - start.green);
     float b_m = (finish.blue - start.blue);
@@ -66,6 +68,7 @@ colour exponential_colour_scale(colour start, colour finish, float percent, floa
     return new_col;
 }
 
+// Return CPU load as percentage, rolling average
 int get_cpu_load_percent() {
     FILE *f;
     f = fopen("/proc/loadavg", "r");
@@ -75,6 +78,25 @@ int get_cpu_load_percent() {
 
     fclose(f);
     return onemin * 100;
+}
+
+// Read user RGB status file, if user wants RGB disabled return 1
+int check_rgb_status() {
+    FILE *f;
+    f = fopen("/home/dbaines/Documents/projects/MSI-RGB-Linux/rgbstatus", "r");
+
+    char* off = "rgboff";
+    char* on = "rgbon";
+
+    char input[10];
+    fscanf(f, "%s", input);
+
+    if(strcmp(input, on) == 0) return 0;
+    else if (strcmp(input, off) == 0) return 1;
+
+    fclose(f);
+
+    return 0;
 }
 
 int poll_cpu_time() {
@@ -106,6 +128,14 @@ int poll_cpu_time() {
         printf("CPU Percentage = %d\n", cpu_load_percentage);
         
         colour current_load;
+
+        if (check_rgb_status() == 1) {
+            set_rgb_on(0);
+            sleep(5);
+            continue;
+        } else {
+            set_rgb_on(1);
+        }
 
         if (is_night() == 1) {
             printf("Is night time\n");

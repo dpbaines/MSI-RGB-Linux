@@ -1,3 +1,3 @@
 #/bin/sh
 
-./rgb
+/home/dbaines/Documents/projects/MSI-RGB-Linux/rgb
